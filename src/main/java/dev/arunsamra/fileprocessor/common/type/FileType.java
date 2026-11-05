@@ -10,19 +10,20 @@ import java.util.Optional;
 public enum FileType {
     PDF(".pdf"),
     JPEG(".jpeg"),
-    JPG(".jpg");
+    JPG(".jpg"),
+    ZIP(".zip");
 
-    private final String extention;
+    private final String extension;
 
     FileType(String extension) {
-        this.extention = extension;
+        this.extension = extension;
     }
 
     public static Optional<FileType> fromFileName(String fileName) {
         String normalized = fileName.toLowerCase(Locale.ROOT);
 
         return Arrays.stream(values())
-                .filter(type -> normalized.endsWith(type.getExtention()))
+                .filter(type -> normalized.endsWith(type.getExtension()))
                 .findFirst();
     }
 }

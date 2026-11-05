@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class RestException extends RuntimeException {
+public abstract class RestException extends RuntimeException {
 
     private final HttpStatus status;
     private final Map<String, List<String>> errors;

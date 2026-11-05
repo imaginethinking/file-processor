@@ -1,7 +1,8 @@
 package dev.arunsamra.fileprocessor.processing;
 
-import dev.arunsamra.fileprocessor.common.exception.InvalidInputFileException;
-import dev.arunsamra.fileprocessor.config.FileProcessorProperties;
+import dev.arunsamra.fileprocessor.common.exception.BadRequestException;
+import dev.arunsamra.fileprocessor.common.type.FileType;
+import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,7 @@ import java.util.Locale;
 @Component
 public class InputFileValidator {
 
-    private final FileProcessorProperties properties;
+    private final FileProcessorPathProperties properties;
 
     public Path validate(String fileName) {
 
@@ -26,19 +27,15 @@ public class InputFileValidator {
                 .normalize();
 
         if (!inputFile.startsWith(inputDirectory)) {
-            throw new InvalidInputFileException("Invalid input file path", fileName);
+            throw new BadRequestException("Invalid input file path: " + fileName);
         }
 
         if (!Files.isRegularFile(inputFile)) {
-            throw new InvalidInputFileException(
-                    "Input file does not exist",
-                    fileName
-            );
+            throw new BadRequestException("Input file does not exist: " + fileName);
         }
 
-
-        if (!fileName.toLowerCase(Locale.ROOT).endsWith(".zip")) {
-            throw new InvalidInputFileException("Input file must be a ZIP file", fileName);
+        if (!fileName.toLowerCase(Locale.ROOT).endsWith(FileType.ZIP.getExtension())) {
+            throw new BadRequestException("Input file must be a ZIP file: " + fileName);
         }
 
         return inputFile;

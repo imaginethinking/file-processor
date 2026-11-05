@@ -1,23 +1,21 @@
 package dev.arunsamra.fileprocessor.archive;
 
-import dev.arunsamra.fileprocessor.common.exception.InvalidZipContentException;
+import dev.arunsamra.fileprocessor.common.exception.ValidationException;
 import dev.arunsamra.fileprocessor.common.type.FileType;
+import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 
+@RequiredArgsConstructor
 @Component
 public class ZipContentValidator {
 
-    private static final Set<FileType> ALLOWED_FILE_TYPES = Set.of(
-            FileType.PDF,
-            FileType.JPG,
-            FileType.JPEG
-    );
+    private final AllowedFileTypesProperties allowedFileTypesProperties;
 
     public void validate(List<ZipEntry> entries) {
         List<String> subdirectories = entries.stream()
@@ -42,7 +40,7 @@ public class ZipContentValidator {
                 errors.put("unsupportedFiles", unsupportedFiles);
             }
 
-            throw new InvalidZipContentException("", errors);
+            throw new ValidationException("Invalid entries in zip file", errors);
         }
     }
 
@@ -54,7 +52,7 @@ public class ZipContentValidator {
 
     private boolean isSupportedFileType(ZipEntry entry) {
         return FileType.fromFileName(entry.getName())
-                .map(ALLOWED_FILE_TYPES::contains)
+                .map(fileType -> allowedFileTypesProperties.allowedFileTypes().contains(fileType))
                 .orElse(false);
     }
 }

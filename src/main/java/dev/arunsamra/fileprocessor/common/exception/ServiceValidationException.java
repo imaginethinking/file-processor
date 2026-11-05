@@ -5,9 +5,8 @@ import org.springframework.http.HttpStatus;
 import java.util.List;
 import java.util.Map;
 
-public class InvalidZipContentException extends RestException {
-
-    public InvalidZipContentException(String message, Map<String, List<String>> errors) {
+public class ServiceValidationException extends RestException {
+    public ServiceValidationException(String message, Map<String, List<String>> errors) {
         super(HttpStatus.BAD_REQUEST, message, errors);
     }
 }
