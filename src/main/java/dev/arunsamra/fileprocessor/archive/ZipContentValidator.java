@@ -4,6 +4,7 @@ import dev.arunsamra.fileprocessor.common.exception.ValidationException;
 import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class ZipContentValidator {
@@ -40,6 +42,7 @@ public class ZipContentValidator {
                 errors.put("unsupportedFiles", unsupportedFiles);
             }
 
+            log.warn("Invalid entries in zip file: {}", errors);
             throw new ValidationException("Invalid entries in zip file", errors);
         }
     }
