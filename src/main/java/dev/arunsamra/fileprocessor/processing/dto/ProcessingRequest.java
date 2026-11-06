@@ -15,5 +15,5 @@ public class ProcessingRequest {
     String fileName;
 
     @Nullable
-    Set<FileType> includeFileTypes;
+    Set<FileType> fileTypes;
 }

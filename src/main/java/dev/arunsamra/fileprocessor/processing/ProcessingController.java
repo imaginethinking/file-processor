@@ -20,6 +20,6 @@ public class ProcessingController {
     @PostMapping
     public ResponseEntity<ProcessingResultResponse> process(@Valid @RequestBody ProcessingRequest request) {
         ProcessingResultResponse response = this.processingService.process(request);
-        return null;
+        return ResponseEntity.ok(response);
     }
 }

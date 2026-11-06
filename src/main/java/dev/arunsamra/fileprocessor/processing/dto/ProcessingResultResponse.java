@@ -1,5 +1,11 @@
 package dev.arunsamra.fileprocessor.processing.dto;
 
-public record ProcessingResultResponse() {
+import dev.arunsamra.fileprocessor.processing.ProcessingStatus;
 
+public record ProcessingResultResponse(
+        ProcessingStatus status,
+        String sourceFile,
+        String processedFile,
+        String encodedFile
+) {
 }

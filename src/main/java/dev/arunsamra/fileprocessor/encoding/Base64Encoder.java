@@ -1,11 +1,12 @@
 package dev.arunsamra.fileprocessor.encoding;
 
-import dev.arunsamra.fileprocessor.common.exception.ZipFileException;
-import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
+import dev.arunsamra.fileprocessor.common.exception.FileProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -13,37 +14,26 @@ import java.util.Base64;
 @RequiredArgsConstructor
 @Component
 public class Base64Encoder {
-    private final FileProcessorPathProperties properties;
-
-    public Path encode(Path zipFile) {
+    public Path encode(Path inputFile, Path outputFile) {
 
         try {
-            Files.createDirectories(properties.encodedDirectory());
+            Files.createDirectories(outputFile.getParent());
 
-            byte[] zipBytes = Files.readAllBytes(zipFile);
-            byte[] encodedBytes = Base64.getEncoder().encode(zipBytes);
-
-            Path outputFile = getOutputPath(zipFile);
-
-            Files.write(outputFile, encodedBytes);
+            try (
+                    InputStream inputStream = Files.newInputStream(inputFile);
+                    OutputStream outputStream = Files.newOutputStream(outputFile);
+                    OutputStream base64Stream = Base64.getEncoder().wrap(outputStream)
+            ) {
+                inputStream.transferTo(base64Stream);
+            }
 
             return outputFile;
 
         } catch (IOException exception) {
-            throw new ZipFileException(
-                    "Failed to Base64 encode processed ZIP",
+            throw new FileProcessingException(
+                    "Failed to Base64 encode file",
                     exception
             );
         }
-    }
-
-    private Path getOutputPath(Path zipFile) {
-
-        String fileName = zipFile.getFileName().toString();
-
-        String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-
-        return properties.encodedDirectory()
-                .resolve(baseName + "_base64.txt");
     }
 }

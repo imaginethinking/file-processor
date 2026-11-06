@@ -16,7 +16,7 @@ public class InputFileValidator {
 
     private final FileProcessorPathProperties properties;
 
-    public Path validate(String fileName) {
+    public Path validate(String fileName, FileType fileType) {
 
         Path inputDirectory = properties.inputDirectory()
                 .toAbsolutePath()
@@ -34,8 +34,8 @@ public class InputFileValidator {
             throw new BadRequestException("Input file does not exist: " + fileName);
         }
 
-        if (!fileName.toLowerCase(Locale.ROOT).endsWith(FileType.ZIP.getExtension())) {
-            throw new BadRequestException("Input file must be a ZIP file: " + fileName);
+        if (!fileName.toLowerCase(Locale.ROOT).endsWith(fileType.getExtension())) {
+            throw new BadRequestException("Input file must be a " + fileType + " file: " + fileName);
         }
 
         return inputFile;

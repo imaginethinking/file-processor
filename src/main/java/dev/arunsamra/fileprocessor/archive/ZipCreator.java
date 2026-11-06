@@ -1,7 +1,6 @@
 package dev.arunsamra.fileprocessor.archive;
 
-import dev.arunsamra.fileprocessor.common.exception.ZipFileException;
-import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
+import dev.arunsamra.fileprocessor.common.exception.FileProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,18 +15,16 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 @Component
 public class ZipCreator {
-    private final FileProcessorPathProperties properties;
 
-    public Path create(Path sourceZip, List<Path> files) {
+    public Path create(Path outputZip, List<Path> files) {
 
         try {
-            Files.createDirectories(properties.processedDirectory());
+            Files.createDirectories(outputZip.getParent());
 
-            Path outputZip = getAvailableOutputPath(sourceZip);
-
-            try (OutputStream outputStream = Files.newOutputStream(outputZip);
-                 ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
-
+            try (
+                    OutputStream outputStream = Files.newOutputStream(outputZip);
+                    ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)
+            ) {
                 for (Path file : files) {
                     addFile(zipOutputStream, file);
                 }
@@ -36,7 +33,7 @@ public class ZipCreator {
             return outputZip;
 
         } catch (IOException exception) {
-            throw new ZipFileException(
+            throw new FileProcessingException(
                     "Failed to create processed ZIP",
                     exception
             );
@@ -50,32 +47,5 @@ public class ZipCreator {
         zipOutputStream.putNextEntry(entry);
         Files.copy(file, zipOutputStream);
         zipOutputStream.closeEntry();
-    }
-
-    private Path getAvailableOutputPath(Path sourceZip) {
-
-        String fileName = sourceZip.getFileName().toString();
-
-        String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-
-        Path output = properties.processedDirectory()
-                .resolve(baseName + "_processed.zip");
-
-        if (!Files.exists(output)) {
-            return output;
-        }
-
-        int counter = 1;
-
-        while (true) {
-            Path candidate = properties.processedDirectory()
-                    .resolve(baseName + "_processed_" + counter + ".zip");
-
-            if (!Files.exists(candidate)) {
-                return candidate;
-            }
-
-            counter++;
-        }
     }
 }

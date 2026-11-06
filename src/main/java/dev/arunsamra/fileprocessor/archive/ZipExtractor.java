@@ -1,6 +1,6 @@
 package dev.arunsamra.fileprocessor.archive;
 
-import dev.arunsamra.fileprocessor.common.exception.ZipFileException;
+import dev.arunsamra.fileprocessor.common.exception.FileProcessingException;
 import dev.arunsamra.fileprocessor.common.type.FileType;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +35,7 @@ public class ZipExtractor {
             }
 
         } catch (IOException e) {
-            throw new ZipFileException(
+            throw new FileProcessingException(
                     "Failed to extract ZIP: " + zipPath.getFileName(),
                     e);
         }
@@ -68,7 +68,7 @@ public class ZipExtractor {
             return outputPath;
 
         } catch (IOException e) {
-            throw new ZipFileException(
+            throw new FileProcessingException(
                     "Failed to extract file: " + entry.getName(),
                     e);
         }

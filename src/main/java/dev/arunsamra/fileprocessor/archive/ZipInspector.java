@@ -1,6 +1,6 @@
 package dev.arunsamra.fileprocessor.archive;
 
-import dev.arunsamra.fileprocessor.common.exception.ZipFileException;
+import dev.arunsamra.fileprocessor.common.exception.FileProcessingException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class ZipInspector {
                     .toList();
 
         } catch (IOException exception) {
-            throw new ZipFileException(
+            throw new FileProcessingException(
                     "Unable to read ZIP file: " + zipPath.getFileName().toString(),
                     exception
             );
