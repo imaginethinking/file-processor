@@ -32,7 +32,6 @@ public class GlobalExceptionHandler {
         ApiErrorResponse response = ApiErrorResponse.of(
                 ex.getStatus(),
                 ex.getMessage(),
-                req.getRequestURI(),
                 ex.getErrors()
         );
 
