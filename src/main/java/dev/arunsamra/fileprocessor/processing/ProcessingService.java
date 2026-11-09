@@ -11,6 +11,7 @@ import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
+import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
@@ -20,10 +21,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
 @RequiredArgsConstructor
@@ -143,6 +146,21 @@ public class ProcessingService {
 
         } finally {
             pathDeleter.delete(tempDirectory);
+        }
+    }
+
+    public InputFilesResponse getInputFiles() {
+        try (Stream<Path> paths = Files.list(pathProperties.inputDirectory())) {
+            List<String> files = paths
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .toList();
+
+            return new InputFilesResponse(files);
+
+        } catch (IOException exception) {
+            throw new FileProcessingException("Failed to read input file directory", exception);
         }
     }
 
