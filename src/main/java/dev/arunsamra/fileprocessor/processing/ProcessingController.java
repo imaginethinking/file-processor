@@ -1,5 +1,6 @@
 package dev.arunsamra.fileprocessor.processing;
 
+import dev.arunsamra.fileprocessor.processing.dto.InputFilesQueryParams;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
@@ -7,10 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @Controller
@@ -26,8 +24,8 @@ public class ProcessingController {
     }
 
     @GetMapping
-    public ResponseEntity<InputFilesResponse> getInputFiles() {
-        InputFilesResponse response = processingService.getInputFiles();
+    public ResponseEntity<InputFilesResponse> getInputFiles(@Valid @ModelAttribute InputFilesQueryParams params) {
+        InputFilesResponse response = processingService.getInputFiles(params);
 
         return ResponseEntity.ok(response);
     }

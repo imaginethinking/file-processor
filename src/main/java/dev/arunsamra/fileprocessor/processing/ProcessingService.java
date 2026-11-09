@@ -11,17 +11,18 @@ import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
+import dev.arunsamra.fileprocessor.processing.dto.InputFilesQueryParams;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -149,12 +150,15 @@ public class ProcessingService {
         }
     }
 
-    public InputFilesResponse getInputFiles() {
+    public InputFilesResponse getInputFiles(InputFilesQueryParams params) {
         try (Stream<Path> paths = Files.list(pathProperties.inputDirectory())) {
             List<String> files = paths
                     .filter(Files::isRegularFile)
                     .map(Path::getFileName)
                     .map(Path::toString)
+                    .filter(fileName -> params.fileType() != null
+                            ? fileName.contains(params.fileType().getExtension())
+                            : true)
                     .toList();
 
             return new InputFilesResponse(files);
