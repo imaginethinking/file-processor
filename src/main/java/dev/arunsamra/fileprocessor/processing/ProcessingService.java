@@ -51,7 +51,6 @@ public class ProcessingService {
     private final PathDeleter pathDeleter;
 
     public ProcessingResultResponse process(ProcessingRequest request) {
-
         log.info("Starting processing for file: {}", request.getFileName());
 
         validateRequest(request);
@@ -64,6 +63,11 @@ public class ProcessingService {
 
         try {
             List<ZipEntry> entries = zipInspector.inspect(inputFile);
+
+            if (entries.isEmpty()) {
+                throw new FileProcessingException("Input ZIP file contains no entries, ZIP must at least one entry", null);
+            }
+
             zipContentValidator.validate(entries);
 
             tempDirectory = Files.createTempDirectory("file-processor-");
