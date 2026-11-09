@@ -157,7 +157,7 @@ public class ProcessingService {
                     .map(Path::getFileName)
                     .map(Path::toString)
                     .filter(fileName -> params.fileType() != null
-                            ? fileName.toLowerCase(Locale.ROOT).contains(params.fileType().getExtension())
+                            ? fileNameResolver.getExtension(fileName).equalsIgnoreCase(params.fileType().getExtension())
                             : true)
                     .toList();
 

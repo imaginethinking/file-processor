@@ -71,7 +71,7 @@ public class FileNameResolver {
                 : fileName;
     }
 
-    private String getExtension(String fileName) {
+    public String getExtension(String fileName) {
 
         int index = fileName.lastIndexOf('.');
 
