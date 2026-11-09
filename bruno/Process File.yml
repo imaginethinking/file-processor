@@ -1,0 +1,22 @@
+info:
+  name: Process File
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/files"
+  body:
+    type: json
+    data: |-
+      {
+        "fileName": "valid.zip"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -1,0 +1,23 @@
+info:
+  name: Process File with Type Filter
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/files"
+  body:
+    type: json
+    data: |-
+      {
+        "fileName": "test.zip",
+        "fileTypes": ["JPEG", "PDF"]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

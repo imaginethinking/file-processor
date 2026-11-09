@@ -31,4 +31,13 @@ build/
 ### VS Code ###
 .vscode/
 
+### Bruno ###
+.env*
+node_modules/
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+### File Processor ###
 /file-processing/
