@@ -1,6 +1,6 @@
 package dev.arunsamra.fileprocessor.common.dto;
 
-import dev.arunsamra.fileprocessor.processing.ProcessingStatus;
+import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;

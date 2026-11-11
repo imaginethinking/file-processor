@@ -1,4 +1,4 @@
-package dev.arunsamra.fileprocessor.processing;
+package dev.arunsamra.fileprocessor.processing.validator;
 
 import dev.arunsamra.fileprocessor.common.exception.BadRequestException;
 import dev.arunsamra.fileprocessor.common.type.FileType;

@@ -1,5 +1,6 @@
-package dev.arunsamra.fileprocessor.processing;
+package dev.arunsamra.fileprocessor.processing.controller;
 
+import dev.arunsamra.fileprocessor.processing.service.ProcessingService;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesQueryParams;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;

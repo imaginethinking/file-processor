@@ -1,6 +1,7 @@
 package dev.arunsamra.fileprocessor.processing;
 
 import dev.arunsamra.fileprocessor.common.exception.ValidationException;
+import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
