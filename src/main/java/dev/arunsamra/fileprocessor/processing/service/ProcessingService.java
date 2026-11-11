@@ -1,4 +1,4 @@
-package dev.arunsamra.fileprocessor.processing;
+package dev.arunsamra.fileprocessor.processing.service;
 
 import dev.arunsamra.fileprocessor.archive.ZipContentValidator;
 import dev.arunsamra.fileprocessor.archive.ZipCreator;
@@ -11,6 +11,9 @@ import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
+import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
+import dev.arunsamra.fileprocessor.processing.validator.InputFileValidator;
+import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesQueryParams;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;
@@ -28,6 +31,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
@@ -207,15 +211,15 @@ public class ProcessingService {
             return;
         }
 
-        List<String> invalidFileTypes = request.getFileTypes().stream()
+        Set<String> invalidFileTypes = request.getFileTypes().stream()
                 .filter(fileType -> !allowedFileTypesProperties.allowedFileTypes().contains(fileType))
                 .map(FileType::getExtension)
-                .toList();
+                .collect(Collectors.toSet());
 
         if (!invalidFileTypes.isEmpty()) {
             throw new ValidationException(
                     "Invalid file types in request",
-                    Map.of("invalidFileTypes", invalidFileTypes)
+                    Map.of("invalidFileTypes", invalidFileTypes.stream().toList())
             );
         }
     }
