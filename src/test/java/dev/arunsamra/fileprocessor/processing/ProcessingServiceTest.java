@@ -16,9 +16,9 @@ import dev.arunsamra.fileprocessor.processing.metadata.entity.ProcessedFileMetad
 import dev.arunsamra.fileprocessor.processing.metadata.factory.ProcessedFileMetadataFactory;
 import dev.arunsamra.fileprocessor.processing.service.ProcessingService;
 import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
-import dev.arunsamra.fileprocessor.storage.FileValidator;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
+import dev.arunsamra.fileprocessor.storage.FileValidator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
 import dev.arunsamra.fileprocessor.xml.XmlMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,12 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
