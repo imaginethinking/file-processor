@@ -11,8 +11,10 @@ import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
+import dev.arunsamra.fileprocessor.processing.metadata.entity.ProcessedFileMetadata;
+import dev.arunsamra.fileprocessor.processing.metadata.factory.ProcessedFileMetadataFactory;
 import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
-import dev.arunsamra.fileprocessor.processing.validator.InputFileValidator;
+import dev.arunsamra.fileprocessor.storage.FileValidator;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesQueryParams;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
@@ -21,13 +23,16 @@ import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
+import dev.arunsamra.fileprocessor.xml.XmlMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +48,7 @@ public class ProcessingService {
     private final AllowedFileTypesProperties allowedFileTypesProperties;
     private final FileProcessorPathProperties pathProperties;
 
-    private final InputFileValidator inputFileValidator;
+    private final FileValidator inputFileValidator;
     private final ZipInspector zipInspector;
     private final ZipContentValidator zipContentValidator;
     private final ZipExtractor zipExtractor;
@@ -55,12 +60,15 @@ public class ProcessingService {
     private final FileRelocator fileRelocator;
     private final PathDeleter pathDeleter;
 
+    private final ProcessedFileMetadataFactory processedFileMetadataFactory;
+    private final XmlMapper xmlMapper;
+
     public ProcessingResultResponse process(ProcessingRequest request) {
         log.info("Starting processing for file: {}", request.getFileName());
 
         validateRequest(request);
 
-        Path inputFile = inputFileValidator.validate(request.getFileName(), FileType.ZIP);
+        Path inputFile = inputFileValidator.validate(pathProperties.inputDirectory(), request.getFileName(), FileType.ZIP);
 
         Path tempDirectory = null;
         Path processedDestination = null;
@@ -91,6 +99,20 @@ public class ProcessingService {
 
             String sourceFileName = inputFile.getFileName().toString();
 
+            ProcessedFileMetadata metadata = processedFileMetadataFactory.create(
+                    sourceFileName,
+                    extractedFiles
+            );
+
+            Path metadataFile = tempDirectory.resolve("metadata.xml");
+
+            try (OutputStream outputStream = Files.newOutputStream(metadataFile)) {
+                xmlMapper.marshal(metadata, outputStream);
+            }
+
+            List<Path> filesToZip = new ArrayList<>(extractedFiles);
+            filesToZip.add(metadataFile);
+
             String baseName = getBaseName(sourceFileName);
 
             List<Path> outputPaths = fileNameResolver.resolveAll(
@@ -105,7 +127,7 @@ public class ProcessingService {
 
             Path processedZip = zipCreator.create(
                     processedDestination,
-                    extractedFiles
+                    filesToZip
             );
 
             Path encodedFile = base64Encoder.encode(
@@ -133,7 +155,7 @@ public class ProcessingService {
             moveToError(inputFile);
 
             throw new FileProcessingException(
-                    "Failed to create temporary directory",
+                    "File system failure while processing: " + inputFile.getFileName(),
                     exception
             );
 

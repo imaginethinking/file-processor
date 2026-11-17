@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "fileName": "valid.zip"
+        "fileName": "happy_path.zip"
       }
   auth: inherit
 

@@ -12,20 +12,25 @@ import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
+import dev.arunsamra.fileprocessor.processing.metadata.entity.ProcessedFileMetadata;
+import dev.arunsamra.fileprocessor.processing.metadata.factory.ProcessedFileMetadataFactory;
 import dev.arunsamra.fileprocessor.processing.service.ProcessingService;
 import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
-import dev.arunsamra.fileprocessor.processing.validator.InputFileValidator;
+import dev.arunsamra.fileprocessor.storage.FileValidator;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
+import dev.arunsamra.fileprocessor.xml.XmlMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -35,7 +40,9 @@ import java.util.zip.ZipEntry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -52,7 +59,7 @@ class ProcessingServiceTest {
     private FileProcessorPathProperties pathProperties;
 
     @Mock
-    private InputFileValidator inputFileValidator;
+    private FileValidator inputFileValidator;
 
     @Mock
     private ZipInspector zipInspector;
@@ -84,6 +91,15 @@ class ProcessingServiceTest {
     @Mock
     private ProcessingRequest request;
 
+    @Mock
+    private ProcessedFileMetadataFactory processedFileMetadataFactory;
+
+    @Mock
+    private XmlMapper xmlMapper;
+
+    @Mock
+    private ProcessedFileMetadata processedFileMetadata;
+
     private ProcessingService processingService;
 
     private Path inputFile;
@@ -111,7 +127,9 @@ class ProcessingServiceTest {
                 base64Encoder,
                 fileNameResolver,
                 fileRelocator,
-                pathDeleter
+                pathDeleter,
+                processedFileMetadataFactory,
+                xmlMapper
         );
     }
 
@@ -130,11 +148,14 @@ class ProcessingServiceTest {
         when(allowedFileTypesProperties.allowedFileTypes())
                 .thenReturn(Set.of(FileType.PDF, FileType.JPG, FileType.JPEG));
 
-        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+        when(inputFileValidator.validate(pathProperties.inputDirectory(),"documents.zip", FileType.ZIP)).thenReturn(inputFile);
         when(zipInspector.inspect(inputFile)).thenReturn(List.of(pdfEntry));
 
         when(zipExtractor.extract(eq(inputFile), any(Path.class), eq(Set.of(FileType.PDF))))
                 .thenReturn(List.of(extractedPdf));
+
+        when(processedFileMetadataFactory.create("documents.zip", List.of(extractedPdf)))
+                .thenReturn(processedFileMetadata);
 
         when(pathProperties.processedDirectory()).thenReturn(processedDirectory);
         when(pathProperties.encodedDirectory()).thenReturn(encodedDirectory);
@@ -142,7 +163,7 @@ class ProcessingServiceTest {
         when(fileNameResolver.resolveAll(any()))
                 .thenReturn(List.of(sourceDestination, processedDestination, encodedDestination));
 
-        when(zipCreator.create(processedDestination, List.of(extractedPdf))).thenReturn(processedDestination);
+        when(zipCreator.create(eq(processedDestination), anyList())).thenReturn(processedDestination);
         when(base64Encoder.encode(processedDestination, encodedDestination)).thenReturn(encodedDestination);
         when(fileRelocator.move(inputFile, sourceDestination)).thenReturn(sourceDestination);
 
@@ -155,6 +176,18 @@ class ProcessingServiceTest {
 
         verify(zipContentValidator).validate(List.of(pdfEntry));
         verify(fileSignatureValidator).validate(List.of(extractedPdf));
+        verify(processedFileMetadataFactory).create("documents.zip", List.of(extractedPdf));
+        verify(xmlMapper).marshal(eq(processedFileMetadata), any(OutputStream.class));
+
+        ArgumentCaptor<List<Path>> filesCaptor = ArgumentCaptor.forClass(List.class);
+        verify(zipCreator).create(eq(processedDestination), filesCaptor.capture());
+
+        List<Path> filesToZip = filesCaptor.getValue();
+
+        assertTrue(filesToZip.contains(extractedPdf));
+        assertTrue(filesToZip.stream()
+                .anyMatch(path -> path.getFileName().toString().equals("metadata.xml")));
+
         verify(fileRelocator).move(inputFile, sourceDestination);
         verify(pathDeleter).delete(any(Path.class));
     }
@@ -175,7 +208,7 @@ class ProcessingServiceTest {
         when(request.getFileTypes()).thenReturn(Set.of(FileType.PDF));
         when(allowedFileTypesProperties.allowedFileTypes()).thenReturn(Set.of(FileType.PDF));
 
-        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+        when(inputFileValidator.validate(pathProperties.inputDirectory(),"documents.zip", FileType.ZIP)).thenReturn(inputFile);
         when(zipInspector.inspect(inputFile)).thenReturn(List.of(invalidEntry));
 
         doThrow(validationException).when(zipContentValidator).validate(List.of(invalidEntry));
@@ -193,6 +226,8 @@ class ProcessingServiceTest {
 
         verify(fileRelocator).move(inputFile, resolvedErrorPath);
         verify(zipExtractor, never()).extract(any(), any(), any());
+        verify(processedFileMetadataFactory, never()).create(any(), any());
+        verifyNoInteractions(xmlMapper);
         verify(zipCreator, never()).create(any(), any());
     }
 
@@ -210,11 +245,14 @@ class ProcessingServiceTest {
         when(request.getFileTypes()).thenReturn(Set.of(FileType.PDF));
         when(allowedFileTypesProperties.allowedFileTypes()).thenReturn(Set.of(FileType.PDF));
 
-        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+        when(inputFileValidator.validate(pathProperties.inputDirectory(),"documents.zip", FileType.ZIP)).thenReturn(inputFile);
         when(zipInspector.inspect(inputFile)).thenReturn(List.of(pdfEntry));
 
         when(zipExtractor.extract(eq(inputFile), any(Path.class), eq(Set.of(FileType.PDF))))
                 .thenReturn(List.of(extractedPdf));
+
+        when(processedFileMetadataFactory.create("documents.zip", List.of(extractedPdf)))
+                .thenReturn(processedFileMetadata);
 
         when(pathProperties.processedDirectory()).thenReturn(processedDirectory);
         when(pathProperties.encodedDirectory()).thenReturn(encodedDirectory);
@@ -223,7 +261,7 @@ class ProcessingServiceTest {
         when(fileNameResolver.resolveAll(any()))
                 .thenReturn(List.of(sourceDestination, processedDestination, encodedDestination));
 
-        when(zipCreator.create(processedDestination, List.of(extractedPdf))).thenReturn(processedDestination);
+        when(zipCreator.create(eq(processedDestination), anyList())).thenReturn(processedDestination);
 
         when(base64Encoder.encode(processedDestination, encodedDestination))
                 .thenThrow(new ValidationException("Encoding failed", Map.of()));
@@ -233,6 +271,8 @@ class ProcessingServiceTest {
 
         assertThrows(ValidationException.class, () -> processingService.process(request));
 
+        verify(processedFileMetadataFactory).create("documents.zip", List.of(extractedPdf));
+        verify(xmlMapper).marshal(eq(processedFileMetadata), any(OutputStream.class));
         verify(pathDeleter).delete(encodedDestination);
         verify(pathDeleter).delete(processedDestination);
         verify(fileRelocator).move(inputFile, errorDestination);

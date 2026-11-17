@@ -1,5 +1,8 @@
 package dev.arunsamra.fileprocessor.processing.controller;
 
+import dev.arunsamra.fileprocessor.processing.metadata.dto.ProcessedFileMetadataResponse;
+import dev.arunsamra.fileprocessor.processing.metadata.entity.ProcessedFileMetadata;
+import dev.arunsamra.fileprocessor.processing.service.ProcessedFileMetadataService;
 import dev.arunsamra.fileprocessor.processing.service.ProcessingService;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesQueryParams;
 import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProcessingController {
 
     private final ProcessingService processingService;
+    private final ProcessedFileMetadataService processedFileMetadataService;
 
     @PostMapping
     public ResponseEntity<ProcessingResultResponse> process(@Valid @RequestBody ProcessingRequest request) {
@@ -27,6 +31,13 @@ public class ProcessingController {
     @GetMapping
     public ResponseEntity<InputFilesResponse> getInputFiles(@Valid @ModelAttribute InputFilesQueryParams params) {
         InputFilesResponse response = processingService.getInputFiles(params);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{fileName}/metadata")
+    public ResponseEntity<ProcessedFileMetadataResponse> getMetadata(@PathVariable String fileName) {
+        ProcessedFileMetadataResponse response = processedFileMetadataService.getMetadata(fileName);
 
         return ResponseEntity.ok(response);
     }
