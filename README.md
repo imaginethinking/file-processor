@@ -20,7 +20,10 @@ Extract selected files to a temporary directory
 Validate file signatures
     |
     v
-Create processed ZIP
+Generate metadata.xml
+    |
+    v
+Create processed ZIP containing extracted files and metadata
     |
     v
 Base64 encode processed ZIP
@@ -39,7 +42,6 @@ If processing fails, partial output files are deleted and the original ZIP is mo
 - PDF
 - JPEG / JPG
 
-
 ## Directories
 
 ```text
@@ -52,7 +54,41 @@ file-processing/
 
 _Supported file types and directory paths are configurable._
 
-## Example Successful Response
+## Metadata
+
+Each successfully processed ZIP contains a `metadata.xml` file describing the processed contents.
+
+Metadata includes:
+
+- Original ZIP filename
+- Processing timestamp
+- Number of processed files
+- Filename, file type, and size of each processed file
+
+Metadata can be retrieved for a processed file using:
+
+```text
+GET /{fileName}/metadata
+```
+
+Example response:
+
+```json
+{
+  "originalFilename": "documents.zip",
+  "processedAt": "2026-11-17T10:15:30",
+  "count": 1,
+  "files": [
+    {
+      "fileName": "document.pdf",
+      "fileType": ".pdf",
+      "fileSize": 1024
+    }
+  ]
+}
+```
+
+## Example Successful Processing Response
 
 HTTP `200 OK`
 
