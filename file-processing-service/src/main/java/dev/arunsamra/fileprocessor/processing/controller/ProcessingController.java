@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/api/v1/files")
+@RequestMapping("internal/v1/files")
 public class ProcessingController {
 
     private final ProcessingService processingService;
