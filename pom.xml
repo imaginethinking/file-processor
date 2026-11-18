@@ -21,5 +21,6 @@
 
     <modules>
         <module>file-processing-service</module>
+        <module>api-gateway</module>
     </modules>
 </project>
