@@ -11,13 +11,12 @@ import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
+import dev.arunsamra.fileprocessor.messaging.event.FileProcessingFailedEvent;
+import dev.arunsamra.fileprocessor.messaging.event.FileProcessingSucceededEvent;
+import dev.arunsamra.fileprocessor.messaging.publisher.ProcessingEventPublisher;
+import dev.arunsamra.fileprocessor.processing.dto.*;
 import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
 import dev.arunsamra.fileprocessor.processing.validator.InputFileValidator;
-import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
-import dev.arunsamra.fileprocessor.processing.dto.InputFilesQueryParams;
-import dev.arunsamra.fileprocessor.processing.dto.InputFilesResponse;
-import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;
-import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
@@ -28,6 +27,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +55,8 @@ public class ProcessingService {
     private final FileNameResolver fileNameResolver;
     private final FileRelocator fileRelocator;
     private final PathDeleter pathDeleter;
+
+    private final ProcessingEventPublisher processingEventPublisher;
 
     public ProcessingResultResponse process(ProcessingRequest request) {
         log.info("Starting processing for file: {}", request.getFileName());
@@ -118,6 +121,14 @@ public class ProcessingService {
                     sourceDestination
             );
 
+            processingEventPublisher.publish(
+                    new FileProcessingSucceededEvent(
+                            sourceFileName,
+                            ZonedDateTime.now(ZoneOffset.UTC),
+                            extractedFiles.size()
+                    )
+            );
+
             log.info("Completed processing for file: {}", sourceFileName);
 
             return new ProcessingResultResponse(
@@ -131,6 +142,7 @@ public class ProcessingService {
 
             rollback(processedDestination, encodedDestination);
             moveToError(inputFile);
+            publishFailureEvent(inputFile, exception);
 
             throw new FileProcessingException(
                     "Failed to create temporary directory",
@@ -141,6 +153,7 @@ public class ProcessingService {
 
             rollback(processedDestination, encodedDestination);
             moveToError(inputFile);
+            publishFailureEvent(inputFile, exception);
 
             throw exception;
 
@@ -148,6 +161,7 @@ public class ProcessingService {
 
             rollback(processedDestination, encodedDestination);
             moveToError(inputFile);
+            publishFailureEvent(inputFile, exception);
 
             throw new FileProcessingException(
                     "Unexpected file processing failure",
@@ -230,5 +244,15 @@ public class ProcessingService {
         return extensionIndex > 0
                 ? fileName.substring(0, extensionIndex)
                 : fileName;
+    }
+
+    private void publishFailureEvent(Path inputFile, Exception exception) {
+        processingEventPublisher.publish(
+                new FileProcessingFailedEvent(
+                        inputFile.getFileName().toString(),
+                        ZonedDateTime.now(ZoneOffset.UTC),
+                        exception.getMessage()
+                )
+        );
     }
 }
