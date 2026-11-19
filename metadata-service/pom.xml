@@ -48,6 +48,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>dev.arunsamra</groupId>
+            <artifactId>common-rest</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -1,0 +1,35 @@
+info:
+  name: Unmarshal Invalid XML
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/metadata/processed-files/unmarshal"
+  body:
+    type: xml
+    data: |-
+      <processedFileMetadata>
+      <originalFilename>happy_path.zip</originalFilename>
+      <processedAt>2026-11-17T10:22:58.875183400</processedAt>
+      <count>2</count>
+      <files>
+      <file>
+      <name>real_pdf.pdf</name>
+      <type>.pdf</type>
+      <size>13274</size>
+      </file>
+      <file>
+      <name>real_jpg.jpg</name>
+      <type>.jpg</type
+      </file>
+      </files>
+      </processedFileMetadata>
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
