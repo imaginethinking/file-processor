@@ -21,6 +21,11 @@ public class GatewayRoutesConfig {
         return serviceRoute("file-processing-service", "files", services.fileProcessing());
     }
 
+    @Bean
+    RouterFunction<ServerResponse> metadataRoute(GatewayServicesProperties services) {
+        return serviceRoute("metadata-service", "metadata", services.metadata());
+    }
+
     private static RouterFunction<ServerResponse> serviceRoute(String id, String resource, String targetUrl) {
         return route(id)
                 .route(path("/api/v1/" + resource + "/**"), http())
