@@ -5,10 +5,12 @@ import dev.arunsamra.fileprocessor.archive.ZipContentValidator;
 import dev.arunsamra.fileprocessor.archive.ZipCreator;
 import dev.arunsamra.fileprocessor.archive.ZipExtractor;
 import dev.arunsamra.fileprocessor.archive.ZipInspector;
+import dev.arunsamra.fileprocessor.common.exception.MetadataServiceException;
 import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
+import dev.arunsamra.fileprocessor.metadata.MetadataFileCreator;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingRequest;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
@@ -84,6 +86,11 @@ class ProcessingServiceTest {
     @Mock
     private ProcessingRequest request;
 
+    @Mock
+    private MetadataFileCreator metadataFileCreator;
+
+    private Path metadataFile;
+
     private ProcessingService processingService;
 
     private Path inputFile;
@@ -99,6 +106,8 @@ class ProcessingServiceTest {
         encodedDirectory = tempDirectory.resolve("Encoded");
         errorDirectory = tempDirectory.resolve("Error");
 
+        metadataFile = tempDirectory.resolve("metadata.xml");
+
         processingService = new ProcessingService(
                 allowedFileTypesProperties,
                 pathProperties,
@@ -111,7 +120,8 @@ class ProcessingServiceTest {
                 base64Encoder,
                 fileNameResolver,
                 fileRelocator,
-                pathDeleter
+                pathDeleter,
+                metadataFileCreator
         );
     }
 
@@ -142,7 +152,11 @@ class ProcessingServiceTest {
         when(fileNameResolver.resolveAll(any()))
                 .thenReturn(List.of(sourceDestination, processedDestination, encodedDestination));
 
-        when(zipCreator.create(processedDestination, List.of(extractedPdf))).thenReturn(processedDestination);
+        when(metadataFileCreator.create(eq("documents.zip"), eq(List.of(extractedPdf)), any(Path.class)))
+                .thenReturn(metadataFile);
+
+        when(zipCreator.create(processedDestination, List.of(extractedPdf, metadataFile)))
+                .thenReturn(processedDestination);
         when(base64Encoder.encode(processedDestination, encodedDestination)).thenReturn(encodedDestination);
         when(fileRelocator.move(inputFile, sourceDestination)).thenReturn(sourceDestination);
 
@@ -223,7 +237,11 @@ class ProcessingServiceTest {
         when(fileNameResolver.resolveAll(any()))
                 .thenReturn(List.of(sourceDestination, processedDestination, encodedDestination));
 
-        when(zipCreator.create(processedDestination, List.of(extractedPdf))).thenReturn(processedDestination);
+        when(metadataFileCreator.create(eq("documents.zip"), eq(List.of(extractedPdf)), any(Path.class)))
+                .thenReturn(metadataFile);
+
+        when(zipCreator.create(processedDestination, List.of(extractedPdf, metadataFile)))
+                .thenReturn(processedDestination);
 
         when(base64Encoder.encode(processedDestination, encodedDestination))
                 .thenThrow(new ValidationException("Encoding failed", Map.of()));
@@ -237,5 +255,41 @@ class ProcessingServiceTest {
         verify(pathDeleter).delete(processedDestination);
         verify(fileRelocator).move(inputFile, errorDestination);
         verify(fileRelocator, never()).move(inputFile, sourceDestination);
+    }
+
+    @Test
+    void shouldMoveInputToErrorWhenMetadataServiceFails() {
+        ZipEntry pdfEntry = new ZipEntry("document.pdf");
+        Path extractedPdf = tempDirectory.resolve("document.pdf");
+        Path errorDestination = errorDirectory.resolve("documents.zip");
+        MetadataServiceException metadataException = new MetadataServiceException("Metadata service request failed", null);
+
+        when(request.getFileName()).thenReturn("documents.zip");
+        when(request.getFileTypes()).thenReturn(Set.of(FileType.PDF));
+        when(allowedFileTypesProperties.allowedFileTypes()).thenReturn(Set.of(FileType.PDF));
+
+        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+
+        when(zipInspector.inspect(inputFile)).thenReturn(List.of(pdfEntry));
+
+        when(zipExtractor.extract(eq(inputFile), any(Path.class), eq(Set.of(FileType.PDF))))
+                .thenReturn(List.of(extractedPdf));
+
+        when(metadataFileCreator.create(eq("documents.zip"), eq(List.of(extractedPdf)), any(Path.class)))
+                .thenThrow(metadataException);
+
+        when(pathProperties.errorDirectory()).thenReturn(errorDirectory);
+
+        when(fileNameResolver.resolve(errorDestination)).thenReturn(errorDestination);
+        when(fileRelocator.move(inputFile, errorDestination)).thenReturn(errorDestination);
+
+        MetadataServiceException thrown = assertThrows(
+                MetadataServiceException.class,
+                () -> processingService.process(request)
+        );
+
+        assertEquals(metadataException, thrown);
+        verify(fileRelocator).move(inputFile, errorDestination);
+        verify(zipCreator, never()).create(any(), any());
     }
 }

@@ -11,6 +11,7 @@ import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
+import dev.arunsamra.fileprocessor.metadata.MetadataFileCreator;
 import dev.arunsamra.fileprocessor.processing.dto.*;
 import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
 import dev.arunsamra.fileprocessor.processing.validator.InputFileValidator;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +52,8 @@ public class ProcessingService {
     private final FileNameResolver fileNameResolver;
     private final FileRelocator fileRelocator;
     private final PathDeleter pathDeleter;
+
+    private final MetadataFileCreator metadataFileCreator;
 
     public ProcessingResultResponse process(ProcessingRequest request) {
         log.info("Starting processing for file: {}", request.getFileName());
@@ -87,6 +91,11 @@ public class ProcessingService {
 
             String sourceFileName = inputFile.getFileName().toString();
 
+            Path metadataFile = metadataFileCreator.create(sourceFileName, extractedFiles, tempDirectory);
+
+            List<Path> filesToZip = new ArrayList<>(extractedFiles);
+            filesToZip.add(metadataFile);
+
             String baseName = getBaseName(sourceFileName);
 
             List<Path> outputPaths = fileNameResolver.resolveAll(
@@ -101,7 +110,7 @@ public class ProcessingService {
 
             Path processedZip = zipCreator.create(
                     processedDestination,
-                    extractedFiles
+                    filesToZip
             );
 
             Path encodedFile = base64Encoder.encode(
