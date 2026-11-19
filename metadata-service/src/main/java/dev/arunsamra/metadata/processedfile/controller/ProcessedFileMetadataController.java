@@ -1,6 +1,8 @@
 package dev.arunsamra.metadata.processedfile.controller;
 
 import dev.arunsamra.metadata.processedfile.dto.ProcessedFileMetadataRequest;
+import dev.arunsamra.metadata.processedfile.dto.ProcessedFileMetadataResponse;
+import dev.arunsamra.metadata.processedfile.model.ProcessedFileMetadata;
 import dev.arunsamra.metadata.processedfile.service.ProcessedFileMetadataService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +28,14 @@ public class ProcessedFileMetadataController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
                 .body(metadataService.create(request));
+    }
+
+    @PostMapping(
+            path = "/unmarshal",
+            consumes = MediaType.APPLICATION_XML_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<ProcessedFileMetadataResponse> unmarshal(@RequestBody byte[] xml) {
+        return ResponseEntity.ok(metadataService.read(xml));
     }
 }
