@@ -1,10 +1,10 @@
 package dev.arunsamra.fileprocessor.processing;
 
+import dev.arunsamra.common.rest.exception.ValidationException;
 import dev.arunsamra.fileprocessor.archive.ZipContentValidator;
 import dev.arunsamra.fileprocessor.archive.ZipCreator;
 import dev.arunsamra.fileprocessor.archive.ZipExtractor;
 import dev.arunsamra.fileprocessor.archive.ZipInspector;
-import dev.arunsamra.common.rest.exception.ValidationException;
 import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
