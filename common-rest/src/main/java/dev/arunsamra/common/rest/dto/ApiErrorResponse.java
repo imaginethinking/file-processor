@@ -1,22 +1,23 @@
-package dev.arunsamra.fileprocessor.common.dto;
+package dev.arunsamra.common.rest.dto;
 
-import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Map;
 
 public record ApiErrorResponse(
-        ProcessingStatus status,
+        String status,
         String error,
         String message,
         Map<String, List<String>> details
 ) {
+    private static final String FAILED = "FAILED";
+
     public static ApiErrorResponse of(HttpStatus httpStatus, String message) {
-        return new ApiErrorResponse(ProcessingStatus.FAILED, httpStatus.getReasonPhrase(), message, null);
+        return new ApiErrorResponse(FAILED, httpStatus.getReasonPhrase(), message, null);
     }
 
     public static ApiErrorResponse of(HttpStatus httpStatus, String message, Map<String, List<String>> details) {
-        return new ApiErrorResponse(ProcessingStatus.FAILED, httpStatus.getReasonPhrase(), message, details);
+        return new ApiErrorResponse(FAILED, httpStatus.getReasonPhrase(), message, details);
     }
 }

@@ -1,6 +1,6 @@
 package dev.arunsamra.fileprocessor.processing.validator;
 
-import dev.arunsamra.fileprocessor.common.exception.BadRequestException;
+import dev.arunsamra.common.rest.exception.BadRequestException;
 import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import lombok.RequiredArgsConstructor;

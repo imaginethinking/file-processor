@@ -23,7 +23,18 @@
         <module>file-processing-service</module>
         <module>api-gateway</module>
         <module>metadata-service</module>
+        <module>common-rest</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>dev.arunsamra</groupId>
+                <artifactId>common-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <pluginManagement>

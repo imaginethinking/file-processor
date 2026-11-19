@@ -1,4 +1,4 @@
-package dev.arunsamra.fileprocessor.common.exception;
+package dev.arunsamra.common.rest.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

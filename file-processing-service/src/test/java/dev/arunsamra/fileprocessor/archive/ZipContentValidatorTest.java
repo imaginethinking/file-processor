@@ -1,6 +1,6 @@
 package dev.arunsamra.fileprocessor.archive;
 
-import dev.arunsamra.fileprocessor.common.exception.ValidationException;
+import dev.arunsamra.common.rest.exception.ValidationException;
 import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.AllowedFileTypesProperties;
 import org.junit.jupiter.api.BeforeEach;

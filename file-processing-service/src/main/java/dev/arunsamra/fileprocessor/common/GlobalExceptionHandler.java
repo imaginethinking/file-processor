@@ -1,9 +1,9 @@
 package dev.arunsamra.fileprocessor.common;
 
-import dev.arunsamra.fileprocessor.common.dto.ApiErrorResponse;
-import dev.arunsamra.fileprocessor.common.exception.BadRequestException;
-import dev.arunsamra.fileprocessor.common.exception.RestException;
-import dev.arunsamra.fileprocessor.common.exception.ValidationException;
+import dev.arunsamra.common.rest.dto.ApiErrorResponse;
+import dev.arunsamra.common.rest.exception.BadRequestException;
+import dev.arunsamra.common.rest.exception.RestException;
+import dev.arunsamra.common.rest.exception.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

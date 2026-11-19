@@ -1,5 +1,6 @@
 package dev.arunsamra.fileprocessor.common.exception;
 
+import dev.arunsamra.common.rest.exception.RestException;
 import org.springframework.http.HttpStatus;
 
 public class FileProcessingException extends RestException {
