@@ -57,6 +57,10 @@
             <groupId>dev.arunsamra</groupId>
             <artifactId>common-rest</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.arunsamra</groupId>
+            <artifactId>common-web</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

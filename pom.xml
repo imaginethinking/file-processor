@@ -24,6 +24,7 @@
         <module>api-gateway</module>
         <module>metadata-service</module>
         <module>common-rest</module>
+        <module>common-web</module>
     </modules>
 
     <dependencyManagement>
@@ -31,6 +32,11 @@
             <dependency>
                 <groupId>dev.arunsamra</groupId>
                 <artifactId>common-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.arunsamra</groupId>
+                <artifactId>common-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
