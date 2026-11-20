@@ -16,9 +16,9 @@ import dev.arunsamra.fileprocessor.processing.dto.ProcessingResultResponse;
 import dev.arunsamra.fileprocessor.processing.dto.ProcessingStatus;
 import dev.arunsamra.fileprocessor.processing.service.ProcessingService;
 import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
-import dev.arunsamra.fileprocessor.processing.validator.InputFileValidator;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
+import dev.arunsamra.fileprocessor.storage.FileValidator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class ProcessingServiceTest {
     private FileProcessorPathProperties pathProperties;
 
     @Mock
-    private InputFileValidator inputFileValidator;
+    private FileValidator fileValidator;
 
     @Mock
     private ZipInspector zipInspector;
@@ -107,11 +107,12 @@ class ProcessingServiceTest {
         errorDirectory = tempDirectory.resolve("Error");
 
         metadataFile = tempDirectory.resolve("metadata.xml");
+        when(pathProperties.inputDirectory()).thenReturn(tempDirectory);
 
         processingService = new ProcessingService(
                 allowedFileTypesProperties,
                 pathProperties,
-                inputFileValidator,
+                fileValidator,
                 zipInspector,
                 zipContentValidator,
                 zipExtractor,
@@ -140,7 +141,7 @@ class ProcessingServiceTest {
         when(allowedFileTypesProperties.allowedFileTypes())
                 .thenReturn(Set.of(FileType.PDF, FileType.JPG, FileType.JPEG));
 
-        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+        when(fileValidator.validate(tempDirectory,"documents.zip", FileType.ZIP)).thenReturn(inputFile);
         when(zipInspector.inspect(inputFile)).thenReturn(List.of(pdfEntry));
 
         when(zipExtractor.extract(eq(inputFile), any(Path.class), eq(Set.of(FileType.PDF))))
@@ -189,7 +190,7 @@ class ProcessingServiceTest {
         when(request.getFileTypes()).thenReturn(Set.of(FileType.PDF));
         when(allowedFileTypesProperties.allowedFileTypes()).thenReturn(Set.of(FileType.PDF));
 
-        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+        when(fileValidator.validate(tempDirectory,"documents.zip", FileType.ZIP)).thenReturn(inputFile);
         when(zipInspector.inspect(inputFile)).thenReturn(List.of(invalidEntry));
 
         doThrow(validationException).when(zipContentValidator).validate(List.of(invalidEntry));
@@ -224,7 +225,7 @@ class ProcessingServiceTest {
         when(request.getFileTypes()).thenReturn(Set.of(FileType.PDF));
         when(allowedFileTypesProperties.allowedFileTypes()).thenReturn(Set.of(FileType.PDF));
 
-        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+        when(fileValidator.validate(tempDirectory,"documents.zip", FileType.ZIP)).thenReturn(inputFile);
         when(zipInspector.inspect(inputFile)).thenReturn(List.of(pdfEntry));
 
         when(zipExtractor.extract(eq(inputFile), any(Path.class), eq(Set.of(FileType.PDF))))
@@ -268,7 +269,7 @@ class ProcessingServiceTest {
         when(request.getFileTypes()).thenReturn(Set.of(FileType.PDF));
         when(allowedFileTypesProperties.allowedFileTypes()).thenReturn(Set.of(FileType.PDF));
 
-        when(inputFileValidator.validate("documents.zip", FileType.ZIP)).thenReturn(inputFile);
+        when(fileValidator.validate(tempDirectory,"documents.zip", FileType.ZIP)).thenReturn(inputFile);
 
         when(zipInspector.inspect(inputFile)).thenReturn(List.of(pdfEntry));
 

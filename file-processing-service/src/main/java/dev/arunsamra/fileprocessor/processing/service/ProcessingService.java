@@ -14,9 +14,9 @@ import dev.arunsamra.fileprocessor.encoding.Base64Encoder;
 import dev.arunsamra.fileprocessor.metadata.MetadataFileCreator;
 import dev.arunsamra.fileprocessor.processing.dto.*;
 import dev.arunsamra.fileprocessor.processing.validator.FileSignatureValidator;
-import dev.arunsamra.fileprocessor.processing.validator.InputFileValidator;
 import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
+import dev.arunsamra.fileprocessor.storage.FileValidator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class ProcessingService {
     private final AllowedFileTypesProperties allowedFileTypesProperties;
     private final FileProcessorPathProperties pathProperties;
 
-    private final InputFileValidator inputFileValidator;
+    private final FileValidator fileValidator;
     private final ZipInspector zipInspector;
     private final ZipContentValidator zipContentValidator;
     private final ZipExtractor zipExtractor;
@@ -60,7 +60,7 @@ public class ProcessingService {
 
         validateRequest(request);
 
-        Path inputFile = inputFileValidator.validate(request.getFileName(), FileType.ZIP);
+        Path inputFile = fileValidator.validate(pathProperties.inputDirectory(), request.getFileName(), FileType.ZIP);
 
         Path tempDirectory = null;
         Path processedDestination = null;

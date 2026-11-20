@@ -2,7 +2,6 @@ package dev.arunsamra.metadata.processedfile.controller;
 
 import dev.arunsamra.metadata.processedfile.dto.ProcessedFileMetadataRequest;
 import dev.arunsamra.metadata.processedfile.dto.ProcessedFileMetadataResponse;
-import dev.arunsamra.metadata.processedfile.model.ProcessedFileMetadata;
 import dev.arunsamra.metadata.processedfile.service.ProcessedFileMetadataService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
