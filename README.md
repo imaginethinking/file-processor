@@ -115,7 +115,6 @@ metadata-service
     +-- public key --> validates JWTs
 ```
 
-
 JWT validation is shared through `common-web`. Validation includes signature, issuer and timestamp validation.
 
 The default trusted issuer is:
@@ -160,7 +159,6 @@ certificates/gateway-jwt.p12
 ```
 
 contains the private key and public certificate.
-
 
 ### 3. Export the public certificate
 
@@ -448,6 +446,19 @@ When running locally, use the repository root as the working directory.
 |---|---|
 | `FILE_PROCESSING_SERVICE_URL` | `http://localhost:8081` |
 | `METADATA_SERVICE_URL` | `http://localhost:8082` |
+
+### Metadata Service Client
+
+The file-processing service uses configurable timeouts when calling `metadata-service` and retries transient connection or timeout failures once by default.
+
+| Variable | Default |
+|---|---|
+| `METADATA_CONNECT_TIMEOUT` | `2s` |
+| `METADATA_READ_TIMEOUT` | `5s` |
+| `METADATA_RETRY_MAX_RETRIES` | `1` |
+| `METADATA_RETRY_DELAY` | `200ms` |
+
+`METADATA_RETRY_MAX_RETRIES` is the number of retries after the initial request. Set it to `0` to disable retries.
 
 ### JWT
 
