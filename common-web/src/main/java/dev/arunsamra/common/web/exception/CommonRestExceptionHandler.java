@@ -1,34 +1,28 @@
-package dev.arunsamra.fileprocessor.common;
+package dev.arunsamra.common.web.exception;
 
 import dev.arunsamra.common.rest.dto.ApiErrorResponse;
 import dev.arunsamra.common.rest.exception.BadRequestException;
 import dev.arunsamra.common.rest.exception.RestException;
 import dev.arunsamra.common.rest.exception.ValidationException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tools.jackson.databind.exc.InvalidFormatException;
 
 import java.util.*;
 
-@ControllerAdvice
-public class GlobalExceptionHandler {
+@RestControllerAdvice
+public class CommonRestExceptionHandler {
 
     @ExceptionHandler(RestException.class)
-    public ResponseEntity<ApiErrorResponse> handleRestException(
-            RestException ex,
-            HttpServletRequest req) {
-        return createErrorResponse(ex, req);
+    public ResponseEntity<ApiErrorResponse> handleRestException(RestException ex) {
+        return createErrorResponse(ex);
     }
 
-
-    private ResponseEntity<ApiErrorResponse> createErrorResponse(
-            RestException ex,
-            HttpServletRequest req) {
+    private ResponseEntity<ApiErrorResponse> createErrorResponse(RestException ex) {
         ApiErrorResponse response = ApiErrorResponse.of(
                 ex.getStatus(),
                 ex.getMessage(),
@@ -41,41 +35,39 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex
+    ) {
         Map<String, List<String>> errors = new HashMap<>();
 
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            String message = error.isBindingFailure()
+                    ? "Invalid value: " + error.getRejectedValue()
+                    : error.getDefaultMessage();
+
             errors.computeIfAbsent(error.getField(), key -> new ArrayList<>())
-                    .add(error.getDefaultMessage());
+                    .add(message);
         }
 
-        ValidationException validationException = new ValidationException(errors);
-        return createErrorResponse(validationException, request);
+        return createErrorResponse(new ValidationException(errors));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(
-            HttpMessageNotReadableException ex,
-            HttpServletRequest request) {
-
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex
+    ) {
         String message;
 
-        if (ex.getMessage() != null && ex.getMessage().contains("Required request body is missing")) {
+        if (ex.getMessage() != null
+                && ex.getMessage().contains("Required request body is missing")) {
             message = "Request body is required";
-
         } else if (ex.getCause() instanceof InvalidFormatException invalidFormatException) {
             message = handleInvalidFormat(invalidFormatException);
-
         } else {
             message = "Request body contains invalid JSON";
         }
 
-        return createErrorResponse(
-                new BadRequestException(message),
-                request
-        );
+        return createErrorResponse(new BadRequestException(message));
     }
 
     private String handleInvalidFormat(InvalidFormatException ex) {

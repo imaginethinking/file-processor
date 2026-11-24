@@ -1,7 +1,10 @@
 package dev.arunsamra.metadata.xml.exception;
 
-public class InvalidXmlException extends RuntimeException {
+import dev.arunsamra.common.rest.exception.RestException;
+import org.springframework.http.HttpStatus;
+
+public class InvalidXmlException extends RestException {
     public InvalidXmlException(String message, Throwable cause) {
-        super(message, cause);
+        super(HttpStatus.BAD_REQUEST, message, cause);
     }
 }

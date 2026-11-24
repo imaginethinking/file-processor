@@ -1,4 +1,4 @@
-package dev.arunsamra.common.web;
+package dev.arunsamra.common.web.correlation;
 
 public final class CorrelationIdConstants {
 

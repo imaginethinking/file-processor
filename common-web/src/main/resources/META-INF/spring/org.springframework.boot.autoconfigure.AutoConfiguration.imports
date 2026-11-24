@@ -1,1 +1,6 @@
 dev.arunsamra.common.web.config.CorrelationIdAutoConfiguration
+dev.arunsamra.common.web.config.RestExceptionHandlerAutoConfiguration
+dev.arunsamra.common.web.security.JwtPublicKeyAutoConfiguration
+dev.arunsamra.common.web.security.JwtValidationAutoConfiguration
+dev.arunsamra.common.web.config.MethodLoggingAutoConfiguration
+dev.arunsamra.common.web.config.CorrelationIdClientAutoConfiguration

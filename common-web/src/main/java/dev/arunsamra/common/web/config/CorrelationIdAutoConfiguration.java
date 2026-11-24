@@ -1,6 +1,6 @@
 package dev.arunsamra.common.web.config;
 
-import dev.arunsamra.common.web.CorrelationIdFilter;
+import dev.arunsamra.common.web.correlation.CorrelationIdFilter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

@@ -1,9 +1,12 @@
 package dev.arunsamra.apigateway.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import dev.arunsamra.common.web.correlation.CorrelationIdConstants;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.servlet.function.RouterFunction;
+import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
 import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.rewritePath;
@@ -13,7 +16,6 @@ import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFuncti
 import static org.springframework.cloud.gateway.server.mvc.predicate.GatewayRequestPredicates.path;
 
 @Configuration
-@ConfigurationProperties
 public class GatewayRoutesConfig {
 
     @Bean
@@ -31,6 +33,30 @@ public class GatewayRoutesConfig {
                 .route(path("/api/v1/" + resource + "/**"), http())
                 .before(uri(targetUrl))
                 .before(rewritePath("/api/v1/" + resource + "(?<segment>.*)", "/internal/v1/" + resource + "${segment}"))
+                .filter((request, next) -> {
+                    ServerRequest.Builder forwardedRequest = ServerRequest.from(request);
+
+                    String bearerToken = (String) request.servletRequest()
+                            .getAttribute("gatewayIssuedBearerToken");
+
+                    if (bearerToken != null) {
+                        forwardedRequest.header(
+                                HttpHeaders.AUTHORIZATION,
+                                bearerToken
+                        );
+                    }
+
+                    String correlationId = MDC.get(CorrelationIdConstants.MDC_KEY);
+
+                    if (correlationId != null && !correlationId.isBlank()) {
+                        forwardedRequest.header(
+                                CorrelationIdConstants.HEADER_NAME,
+                                correlationId
+                        );
+                    }
+
+                    return next.handle(forwardedRequest.build());
+                })
                 .build();
     }
 }

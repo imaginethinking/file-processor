@@ -32,7 +32,6 @@ build/
 .vscode/
 
 ### Bruno ###
-.env*
 node_modules/
 
 ### OS files ###
@@ -41,3 +40,7 @@ Thumbs.db
 
 ### File Processor ###
 file-processing/
+
+### Secrets ###
+.env*
+/certificates/

@@ -1,22 +1,25 @@
-package dev.arunsamra.fileprocessor.common.logging;
+package dev.arunsamra.common.web.logging;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Aspect
-@Component
 public class MethodLoggingAspect {
 
-    @Pointcut("@within(org.springframework.stereotype.Controller) || @within(org.springframework.web.bind.annotation.RestController)")
-    public void controllerMethods() {}
+    @Pointcut(
+            "@within(org.springframework.stereotype.Controller) || " +
+                    "@within(org.springframework.web.bind.annotation.RestController)"
+    )
+    public void controllerMethods() {
+    }
 
     @Pointcut("@within(org.springframework.stereotype.Service)")
-    public void serviceMethods() {}
+    public void serviceMethods() {
+    }
 
     @Around("execution(public * *(..)) && (controllerMethods() || serviceMethods())")
     public Object logExecution(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -34,17 +37,21 @@ public class MethodLoggingAspect {
 
         try {
             return joinPoint.proceed();
-
         } catch (Throwable failure) {
             outcome = "threw";
             exceptionType = failure.getClass().getName();
             throw failure;
-
         } finally {
-            double durationMs = (System.nanoTime() - startedAt) / 1000000.0;
+            double durationMs =
+                    (System.nanoTime() - startedAt) / 1_000_000.0;
 
-            log.debug("Method existed: method={}, outcome={}, duration={}, exceptionType={}",
-                    method, outcome, durationMs, exceptionType);
+            log.debug(
+                    "Method exited: method={}, outcome={}, durationMs={}, exceptionType={}",
+                    method,
+                    outcome,
+                    durationMs,
+                    exceptionType
+            );
         }
     }
 }
