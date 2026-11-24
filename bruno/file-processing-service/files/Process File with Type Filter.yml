@@ -1,11 +1,11 @@
 info:
   name: Process File with Type Filter
   type: http
-  seq: 5
+  seq: 2
 
 http:
   method: POST
-  url: "{{baseUrl}}/api/v1/files"
+  url: "{{fileProcessingServiceUrl}}/api/v1/files"
   body:
     type: json
     data: |-

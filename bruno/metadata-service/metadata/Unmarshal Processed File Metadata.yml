@@ -1,11 +1,11 @@
 info:
-  name: Unmarshal Invalid XML
+  name: Unmarshal Processed File Metadata
   type: http
-  seq: 8
+  seq: 2
 
 http:
   method: POST
-  url: "{{baseUrl}}/api/v1/metadata/processed-files/unmarshal"
+  url: "{{metadataServiceUrl}}/internal/v1/metadata/processed-files/unmarshal"
   body:
     type: xml
     data: |-
@@ -21,7 +21,8 @@ http:
       </file>
       <file>
       <name>real_jpg.jpg</name>
-      <type>.jpg</type
+      <type>.jpg</type>
+      <size>12435</size>
       </file>
       </files>
       </processedFileMetadata>

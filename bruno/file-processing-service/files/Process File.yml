@@ -1,11 +1,11 @@
 info:
   name: Process File
   type: http
-  seq: 4
+  seq: 1
 
 http:
   method: POST
-  url: "{{baseUrl}}/api/v1/files"
+  url: "{{fileProcessingServiceUrl}}/api/v1/files"
   body:
     type: json
     data: |-

@@ -1,5 +1,13 @@
 name: Local
 variables:
-  - name: baseUrl
+  - name: gatewayUrl
     value: http://localhost:8080
+  - name: fileProcessingServiceUrl
+    value: http://localhost:8081
+  - name: metadataServiceUrl
+    value: http://localhost:8082
+  - name: correlationId
+    value: ""
+  - secret: true
+    name: jwt
     description: ""

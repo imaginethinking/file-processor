@@ -1,0 +1,9 @@
+info:
+  name: file-processing-service
+  type: folder
+  seq: 2
+
+request:
+  auth:
+    type: bearer
+    token: "{{jwt}}"
