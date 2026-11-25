@@ -5,8 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/actuator/health"
-  auth: inherit
+  url: "{{gatewayUrl}}/actuator/health"
 
 settings:
   encodeUrl: true

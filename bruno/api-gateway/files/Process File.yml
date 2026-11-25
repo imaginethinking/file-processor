@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/api/v1/files"
+  url: "{{gatewayUrl}}/api/v1/files"
   body:
     type: json
     data: |-

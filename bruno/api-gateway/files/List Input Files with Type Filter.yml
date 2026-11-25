@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/v1/files?fileType=JPEG"
+  url: "{{gatewayUrl}}/api/v1/files?fileType=JPEG"
   params:
     - name: fileType
       value: JPEG

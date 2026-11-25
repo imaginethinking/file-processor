@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/api/v1/metadata/processed-files/unmarshal"
+  url: "{{gatewayUrl}}/api/v1/metadata/processed-files/unmarshal"
   body:
     type: xml
     data: |-

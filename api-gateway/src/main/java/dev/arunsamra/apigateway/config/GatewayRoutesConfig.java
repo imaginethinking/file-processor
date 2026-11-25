@@ -9,6 +9,7 @@ import org.springframework.web.servlet.function.RouterFunction;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
+import static org.springframework.cloud.gateway.server.mvc.filter.AfterFilterFunctions.removeResponseHeader;
 import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.rewritePath;
 import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.uri;
 import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
@@ -57,6 +58,9 @@ public class GatewayRoutesConfig {
 
                     return next.handle(forwardedRequest.build());
                 })
+                .after(removeResponseHeader(
+                        CorrelationIdConstants.HEADER_NAME
+                ))
                 .build();
     }
 }

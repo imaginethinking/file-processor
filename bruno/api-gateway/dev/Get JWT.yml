@@ -6,7 +6,6 @@ info:
 http:
   method: GET
   url: "{{gatewayUrl}}/api/v1/dev/token"
-  auth: inherit
 
 settings:
   encodeUrl: true
