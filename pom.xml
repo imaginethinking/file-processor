@@ -19,6 +19,7 @@
         <java.version>25</java.version>
         <resilience4j.version>2.4.0</resilience4j.version>
         <spotless.version>3.11.0</spotless.version>
+        <jacoco.version>0.8.16</jacoco.version>
     </properties>
 
     <modules>
@@ -64,6 +65,26 @@
                         <removeUnusedImports />
                     </java>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
 
