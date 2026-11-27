@@ -7,6 +7,7 @@ import dev.arunsamra.fileprocessor.common.type.FileType;
 import dev.arunsamra.fileprocessor.config.FileProcessorPathProperties;
 import dev.arunsamra.fileprocessor.metadata.dto.ProcessedFileMetadataResponse;
 import dev.arunsamra.fileprocessor.storage.FileValidator;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -41,10 +42,26 @@ public class MetadataFileReader {
 
         try {
             response = metadataClient.readMetadata(xml);
+        } catch (CallNotPermittedException exception) {
+            log.warn(
+                    "Metadata service request rejected because the circuit breaker is open for file: {}",
+                    processedFileName
+            );
+            throw new MetadataServiceException(
+                    "Metadata service is temporarily unavailable",
+                    exception
+            );
         } catch (RestClientException exception) {
-            log.error("Metadata service request failed for file: {} ({})", processedFileName, exception.getMessage());
+            log.error(
+                    "Metadata service request failed for file: {} ({})",
+                    processedFileName,
+                    exception.getMessage()
+            );
             log.debug("Metadata service failure detail", exception);
-            throw new MetadataServiceException("Metadata service request failed", exception);
+            throw new MetadataServiceException(
+                    "Metadata service request failed",
+                    exception
+            );
         }
 
         if (response == null) {
