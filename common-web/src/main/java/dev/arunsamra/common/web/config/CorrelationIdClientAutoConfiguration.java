@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration
 public class CorrelationIdClientAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean
-    CorrelationIdClientInterceptor correlationIdClientInterceptor() {
-        return new CorrelationIdClientInterceptor();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  CorrelationIdClientInterceptor correlationIdClientInterceptor() {
+    return new CorrelationIdClientInterceptor();
+  }
 }

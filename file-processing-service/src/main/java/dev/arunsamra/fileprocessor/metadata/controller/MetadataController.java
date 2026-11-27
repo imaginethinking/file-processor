@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/internal/v1/files")
 public class MetadataController {
 
-    private final MetadataFileReader metadataFileReader;
+  private final MetadataFileReader metadataFileReader;
 
-    @GetMapping("/{fileName}/metadata")
-    public ResponseEntity<ProcessedFileMetadataResponse> getMetadata(@PathVariable String fileName) {
-        return ResponseEntity.ok(metadataFileReader.read(fileName));
-    }
+  @GetMapping("/{fileName}/metadata")
+  public ResponseEntity<ProcessedFileMetadataResponse> getMetadata(@PathVariable String fileName) {
+    return ResponseEntity.ok(metadataFileReader.read(fileName));
+  }
 }

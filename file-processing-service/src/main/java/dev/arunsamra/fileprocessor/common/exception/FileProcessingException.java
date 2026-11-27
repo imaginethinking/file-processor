@@ -4,7 +4,7 @@ import dev.arunsamra.common.rest.exception.RestException;
 import org.springframework.http.HttpStatus;
 
 public class FileProcessingException extends RestException {
-    public FileProcessingException(String message, Throwable cause) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, message, cause);
-    }
+  public FileProcessingException(String message, Throwable cause) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, message, cause);
+  }
 }

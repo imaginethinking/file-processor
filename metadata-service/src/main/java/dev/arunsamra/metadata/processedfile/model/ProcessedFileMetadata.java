@@ -1,9 +1,8 @@
 package dev.arunsamra.metadata.processedfile.model;
 
 import jakarta.xml.bind.annotation.*;
-import lombok.*;
-
 import java.util.List;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,11 +13,11 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ProcessedFileMetadata {
 
-    private String originalFilename;
-    private String processedAt;
-    private int count;
+  private String originalFilename;
+  private String processedAt;
+  private int count;
 
-    @XmlElementWrapper(name = "files")
-    @XmlElement(name = "file")
-    private List<ProcessedFileEntry> files;
+  @XmlElementWrapper(name = "files")
+  @XmlElement(name = "file")
+  private List<ProcessedFileEntry> files;
 }

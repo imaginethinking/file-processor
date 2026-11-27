@@ -13,38 +13,28 @@ import tools.jackson.databind.ObjectMapper;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            JwtIssuer jwtIssuer,
-            ObjectMapper objectMapper
-    ) throws Exception {
-        JsonAuthenticationEntryPoint authenticationEntryPoint = new JsonAuthenticationEntryPoint(objectMapper);
+  @Bean
+  SecurityFilterChain securityFilterChain(
+      HttpSecurity http, JwtIssuer jwtIssuer, ObjectMapper objectMapper) throws Exception {
+    JsonAuthenticationEntryPoint authenticationEntryPoint =
+        new JsonAuthenticationEntryPoint(objectMapper);
 
-        return http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/actuator/health/**",
-                                "/api/v1/dev/token"
-                        )
-                        .permitAll()
-                        .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                )
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                )
-                .addFilterBefore(
-                        new GatewayJwtFilter(jwtIssuer),
-                        BearerTokenAuthenticationFilter.class
-                )
-                .build();
-    }
+    return http.csrf(csrf -> csrf.disable())
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(authorize ->
+            authorize
+                .requestMatchers("/actuator/health/**", "/api/v1/dev/token")
+                .permitAll()
+                .anyRequest()
+                .authenticated())
+        .oauth2ResourceServer(oauth2 ->
+            oauth2
+                .jwt(Customizer.withDefaults())
+                .authenticationEntryPoint(authenticationEntryPoint))
+        .exceptionHandling(
+            exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
+        .addFilterBefore(new GatewayJwtFilter(jwtIssuer), BearerTokenAuthenticationFilter.class)
+        .build();
+  }
 }

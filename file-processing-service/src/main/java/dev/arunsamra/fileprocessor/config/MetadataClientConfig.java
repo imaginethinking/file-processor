@@ -14,26 +14,26 @@ import org.springframework.web.service.registry.ImportHttpServices;
 @ImportHttpServices(group = "metadata", types = MetadataClient.class)
 public class MetadataClientConfig {
 
-    @Bean
-    RestClientHttpServiceGroupConfigurer metadataClientConfigurer(
-            CorrelationIdClientInterceptor correlationIdClientInterceptor
-    ) {
-        return groups -> groups
-                .filterByName("metadata")
-                .forEachClient((group, builder) -> builder
-                        .requestInterceptor(correlationIdClientInterceptor)
-                        .requestInterceptor((request, body, execution) -> {
-                            Authentication authentication =
-                                    SecurityContextHolder.getContext().getAuthentication();
+  @Bean
+  RestClientHttpServiceGroupConfigurer metadataClientConfigurer(
+      CorrelationIdClientInterceptor correlationIdClientInterceptor) {
+    return groups ->
+        groups
+            .filterByName("metadata")
+            .forEachClient((group, builder) ->
+                builder
+                    .requestInterceptor(correlationIdClientInterceptor)
+                    .requestInterceptor((request, body, execution) -> {
+                      Authentication authentication =
+                          SecurityContextHolder.getContext().getAuthentication();
 
-                            if (authentication instanceof JwtAuthenticationToken jwtAuthentication) {
-                                request.getHeaders().setBearerAuth(
-                                        jwtAuthentication.getToken().getTokenValue()
-                                );
-                            }
+                      if (authentication instanceof JwtAuthenticationToken jwtAuthentication) {
+                        request
+                            .getHeaders()
+                            .setBearerAuth(jwtAuthentication.getToken().getTokenValue());
+                      }
 
-                            return execution.execute(request, body);
-                        })
-                );
-    }
+                      return execution.execute(request, body);
+                    }));
+  }
 }

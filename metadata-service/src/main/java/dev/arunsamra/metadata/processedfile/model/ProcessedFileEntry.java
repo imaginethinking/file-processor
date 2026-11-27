@@ -12,7 +12,7 @@ import lombok.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ProcessedFileEntry {
 
-    private String name;
-    private String type;
-    private long size;
+  private String name;
+  private String type;
+  private long size;
 }

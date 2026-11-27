@@ -7,9 +7,8 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration
 public class RestExceptionHandlerAutoConfiguration {
 
-    @Bean
-    CommonRestExceptionHandler commonRestExceptionHandler() {
-        return new CommonRestExceptionHandler();
-    }
-
+  @Bean
+  CommonRestExceptionHandler commonRestExceptionHandler() {
+    return new CommonRestExceptionHandler();
+  }
 }

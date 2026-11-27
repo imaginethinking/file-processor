@@ -1,8 +1,3 @@
 package dev.arunsamra.fileprocessor.metadata.dto;
 
-public record ProcessedFileEntryRequest(
-        String name,
-        String type,
-        long size
-) {
-}
+public record ProcessedFileEntryRequest(String name, String type, long size) {}

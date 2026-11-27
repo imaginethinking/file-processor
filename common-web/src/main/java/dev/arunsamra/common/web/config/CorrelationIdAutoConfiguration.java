@@ -9,13 +9,13 @@ import org.springframework.core.Ordered;
 @AutoConfiguration
 public class CorrelationIdAutoConfiguration {
 
-    @Bean
-    public FilterRegistrationBean<CorrelationIdFilter> correlationIdFilter() {
-        FilterRegistrationBean<CorrelationIdFilter> registration = new FilterRegistrationBean<>();
+  @Bean
+  public FilterRegistrationBean<CorrelationIdFilter> correlationIdFilter() {
+    FilterRegistrationBean<CorrelationIdFilter> registration = new FilterRegistrationBean<>();
 
-        registration.setFilter(new CorrelationIdFilter());
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    registration.setFilter(new CorrelationIdFilter());
+    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
-        return registration;
-    }
+    return registration;
+  }
 }

@@ -1,82 +1,74 @@
 package dev.arunsamra.fileprocessor.storage;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
 public class FileNameResolver {
 
-    public Path resolve(Path requestedPath) {
+  public Path resolve(Path requestedPath) {
 
-        if (!Files.exists(requestedPath)) {
-            return requestedPath;
-        }
-
-        int counter = 1;
-        Path candidate;
-
-        do {
-            candidate = addSuffix(requestedPath, counter++);
-        } while (Files.exists(candidate));
-
-        return candidate;
+    if (!Files.exists(requestedPath)) {
+      return requestedPath;
     }
 
-    public List<Path> resolveAll(List<Path> requestedPaths) {
+    int counter = 1;
+    Path candidate;
 
-        if (requestedPaths.isEmpty()) {
-            return List.of();
-        }
+    do {
+      candidate = addSuffix(requestedPath, counter++);
+    } while (Files.exists(candidate));
 
-        if (requestedPaths.stream().noneMatch(Files::exists)) {
-            return requestedPaths;
-        }
+    return candidate;
+  }
 
-        int counter = 1;
+  public List<Path> resolveAll(List<Path> requestedPaths) {
 
-        while (true) {
-            int suffix = counter++;
-
-            List<Path> candidates = requestedPaths.stream()
-                    .map(path -> addSuffix(path, suffix))
-                    .toList();
-
-            if (candidates.stream().noneMatch(Files::exists)) {
-                return candidates;
-            }
-        }
+    if (requestedPaths.isEmpty()) {
+      return List.of();
     }
 
-    private Path addSuffix(Path path, int suffix) {
-
-        String fileName = path.getFileName().toString();
-        String baseName = getBaseName(fileName);
-        String extension = getExtension(fileName);
-
-        return path.getParent()
-                .resolve(baseName + "_" + suffix + extension);
+    if (requestedPaths.stream().noneMatch(Files::exists)) {
+      return requestedPaths;
     }
 
-    private String getBaseName(String fileName) {
+    int counter = 1;
 
-        int index = fileName.lastIndexOf('.');
+    while (true) {
+      int suffix = counter++;
 
-        return index > 0
-                ? fileName.substring(0, index)
-                : fileName;
+      List<Path> candidates = requestedPaths.stream().map(path -> addSuffix(path, suffix)).toList();
+
+      if (candidates.stream().noneMatch(Files::exists)) {
+        return candidates;
+      }
     }
+  }
 
-    public String getExtension(String fileName) {
+  private Path addSuffix(Path path, int suffix) {
 
-        int index = fileName.lastIndexOf('.');
+    String fileName = path.getFileName().toString();
+    String baseName = getBaseName(fileName);
+    String extension = getExtension(fileName);
 
-        return index > 0
-                ? fileName.substring(index)
-                : "";
-    }
+    return path.getParent().resolve(baseName + "_" + suffix + extension);
+  }
+
+  private String getBaseName(String fileName) {
+
+    int index = fileName.lastIndexOf('.');
+
+    return index > 0 ? fileName.substring(0, index) : fileName;
+  }
+
+  public String getExtension(String fileName) {
+
+    int index = fileName.lastIndexOf('.');
+
+    return index > 0 ? fileName.substring(index) : "";
+  }
 }

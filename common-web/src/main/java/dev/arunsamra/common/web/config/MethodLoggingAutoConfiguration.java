@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnClass(ProceedingJoinPoint.class)
 public class MethodLoggingAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean
-    MethodLoggingAspect methodLoggingAspect() {
-        return new MethodLoggingAspect();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  MethodLoggingAspect methodLoggingAspect() {
+    return new MethodLoggingAspect();
+  }
 }

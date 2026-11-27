@@ -17,24 +17,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/internal/v1/metadata/processed-files")
 public class ProcessedFileMetadataController {
 
-    private final ProcessedFileMetadataService metadataService;
+  private final ProcessedFileMetadataService metadataService;
 
-    @PostMapping(
-            produces = MediaType.APPLICATION_XML_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<byte[]> create(@Valid @RequestBody ProcessedFileMetadataRequest request) {
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_XML)
-                .body(metadataService.create(request));
-    }
+  @PostMapping(
+      produces = MediaType.APPLICATION_XML_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<byte[]> create(@Valid @RequestBody ProcessedFileMetadataRequest request) {
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_XML)
+        .body(metadataService.create(request));
+  }
 
-    @PostMapping(
-            path = "/unmarshal",
-            consumes = MediaType.APPLICATION_XML_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<ProcessedFileMetadataResponse> unmarshal(@RequestBody byte[] xml) {
-        return ResponseEntity.ok(metadataService.read(xml));
-    }
+  @PostMapping(
+      path = "/unmarshal",
+      consumes = MediaType.APPLICATION_XML_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ProcessedFileMetadataResponse> unmarshal(@RequestBody byte[] xml) {
+    return ResponseEntity.ok(metadataService.read(xml));
+  }
 }

@@ -18,10 +18,6 @@ import dev.arunsamra.fileprocessor.storage.FileNameResolver;
 import dev.arunsamra.fileprocessor.storage.FileRelocator;
 import dev.arunsamra.fileprocessor.storage.FileValidator;
 import dev.arunsamra.fileprocessor.storage.PathDeleter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,208 +28,201 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class ProcessingService {
 
-    private final AllowedFileTypesProperties allowedFileTypesProperties;
-    private final FileProcessorPathProperties pathProperties;
+  private final AllowedFileTypesProperties allowedFileTypesProperties;
+  private final FileProcessorPathProperties pathProperties;
 
-    private final FileValidator fileValidator;
-    private final ZipInspector zipInspector;
-    private final ZipContentValidator zipContentValidator;
-    private final ZipExtractor zipExtractor;
-    private final FileSignatureValidator fileSignatureValidator;
-    private final ZipCreator zipCreator;
-    private final Base64Encoder base64Encoder;
+  private final FileValidator fileValidator;
+  private final ZipInspector zipInspector;
+  private final ZipContentValidator zipContentValidator;
+  private final ZipExtractor zipExtractor;
+  private final FileSignatureValidator fileSignatureValidator;
+  private final ZipCreator zipCreator;
+  private final Base64Encoder base64Encoder;
 
-    private final FileNameResolver fileNameResolver;
-    private final FileRelocator fileRelocator;
-    private final PathDeleter pathDeleter;
+  private final FileNameResolver fileNameResolver;
+  private final FileRelocator fileRelocator;
+  private final PathDeleter pathDeleter;
 
-    private final MetadataFileCreator metadataFileCreator;
+  private final MetadataFileCreator metadataFileCreator;
 
-    public ProcessingResultResponse process(ProcessingRequest request) {
-        log.info("Starting processing for file: {}", request.getFileName());
+  public ProcessingResultResponse process(ProcessingRequest request) {
+    log.info("Starting processing for file: {}", request.getFileName());
 
-        validateRequest(request);
+    validateRequest(request);
 
-        Path inputFile = fileValidator.validate(pathProperties.inputDirectory(), request.getFileName(), FileType.ZIP);
+    Path inputFile =
+        fileValidator.validate(
+            pathProperties.inputDirectory(), request.getFileName(), FileType.ZIP);
 
-        Path tempDirectory = null;
-        Path processedDestination = null;
-        Path encodedDestination = null;
+    Path tempDirectory = null;
+    Path processedDestination = null;
+    Path encodedDestination = null;
 
-        try {
-            List<ZipEntry> entries = zipInspector.inspect(inputFile);
+    try {
+      List<ZipEntry> entries = zipInspector.inspect(inputFile);
 
-            if (entries.isEmpty()) {
-                throw new FileProcessingException("Input ZIP file contains no entries, ZIP must at least one entry", null);
-            }
+      if (entries.isEmpty()) {
+        throw new FileProcessingException(
+            "Input ZIP file contains no entries, ZIP must at least one entry", null);
+      }
 
-            zipContentValidator.validate(entries);
+      zipContentValidator.validate(entries);
 
-            tempDirectory = Files.createTempDirectory("file-processor-");
+      tempDirectory = Files.createTempDirectory("file-processor-");
 
-            Set<FileType> includedFileTypes = request.getFileTypes() == null
-                            ? allowedFileTypesProperties.allowedFileTypes()
-                            : request.getFileTypes();
+      Set<FileType> includedFileTypes =
+          request.getFileTypes() == null
+              ? allowedFileTypesProperties.allowedFileTypes()
+              : request.getFileTypes();
 
-            List<Path> extractedFiles = zipExtractor.extract(
-                    inputFile,
-                    tempDirectory,
-                    includedFileTypes
-            );
+      List<Path> extractedFiles = zipExtractor.extract(inputFile, tempDirectory, includedFileTypes);
 
-            fileSignatureValidator.validate(extractedFiles);
+      fileSignatureValidator.validate(extractedFiles);
 
-            String sourceFileName = inputFile.getFileName().toString();
+      String sourceFileName = inputFile.getFileName().toString();
 
-            Path metadataFile = metadataFileCreator.create(sourceFileName, extractedFiles, tempDirectory);
+      Path metadataFile = metadataFileCreator.create(sourceFileName, extractedFiles, tempDirectory);
 
-            List<Path> filesToZip = new ArrayList<>(extractedFiles);
-            filesToZip.add(metadataFile);
+      List<Path> filesToZip = new ArrayList<>(extractedFiles);
+      filesToZip.add(metadataFile);
 
-            String baseName = getBaseName(sourceFileName);
+      String baseName = getBaseName(sourceFileName);
 
-            List<Path> outputPaths = fileNameResolver.resolveAll(
-                    List.of(pathProperties.processedDirectory().resolve(baseName + FileType.ZIP.getExtension()),
-                            pathProperties.processedDirectory().resolve(baseName + "_processed" + FileType.ZIP.getExtension()),
-                            pathProperties.encodedDirectory().resolve(baseName + "_processed_base64" + FileType.TXT.getExtension()))
-            );
+      List<Path> outputPaths =
+          fileNameResolver.resolveAll(
+              List.of(
+                  pathProperties
+                      .processedDirectory()
+                      .resolve(baseName + FileType.ZIP.getExtension()),
+                  pathProperties
+                      .processedDirectory()
+                      .resolve(baseName + "_processed" + FileType.ZIP.getExtension()),
+                  pathProperties
+                      .encodedDirectory()
+                      .resolve(baseName + "_processed_base64" + FileType.TXT.getExtension())));
 
-            Path sourceDestination = outputPaths.get(0);
-            processedDestination = outputPaths.get(1);
-            encodedDestination = outputPaths.get(2);
+      Path sourceDestination = outputPaths.get(0);
+      processedDestination = outputPaths.get(1);
+      encodedDestination = outputPaths.get(2);
 
-            Path processedZip = zipCreator.create(
-                    processedDestination,
-                    filesToZip
-            );
+      Path processedZip = zipCreator.create(processedDestination, filesToZip);
 
-            Path encodedFile = base64Encoder.encode(
-                    processedZip,
-                    encodedDestination
-            );
+      Path encodedFile = base64Encoder.encode(processedZip, encodedDestination);
 
-            Path movedSource = fileRelocator.move(
-                    inputFile,
-                    sourceDestination
-            );
+      Path movedSource = fileRelocator.move(inputFile, sourceDestination);
 
-            log.info("Completed processing for file: {}", sourceFileName);
+      log.info("Completed processing for file: {}", sourceFileName);
 
-            return new ProcessingResultResponse(
-                    ProcessingStatus.SUCCESS,
-                    movedSource.getFileName().toString(),
-                    processedZip.getFileName().toString(),
-                    encodedFile.getFileName().toString()
-            );
+      return new ProcessingResultResponse(
+          ProcessingStatus.SUCCESS,
+          movedSource.getFileName().toString(),
+          processedZip.getFileName().toString(),
+          encodedFile.getFileName().toString());
 
-        } catch (IOException exception) {
+    } catch (IOException exception) {
 
-            rollback(processedDestination, encodedDestination);
-            moveToError(inputFile);
+      rollback(processedDestination, encodedDestination);
+      moveToError(inputFile);
 
-            throw new FileProcessingException(
-                    "Failed to create temporary directory",
-                    exception
-            );
+      throw new FileProcessingException("Failed to create temporary directory", exception);
 
-        } catch (RestException exception) {
+    } catch (RestException exception) {
 
-            rollback(processedDestination, encodedDestination);
-            moveToError(inputFile);
+      rollback(processedDestination, encodedDestination);
+      moveToError(inputFile);
 
-            throw exception;
+      throw exception;
 
-        } catch (RuntimeException exception) {
+    } catch (RuntimeException exception) {
 
-            rollback(processedDestination, encodedDestination);
-            moveToError(inputFile);
+      rollback(processedDestination, encodedDestination);
+      moveToError(inputFile);
 
-            throw new FileProcessingException(
-                    "Unexpected file processing failure",
-                    exception
-            );
+      throw new FileProcessingException("Unexpected file processing failure", exception);
 
-        } finally {
-            pathDeleter.delete(tempDirectory);
-        }
+    } finally {
+      pathDeleter.delete(tempDirectory);
+    }
+  }
+
+  public InputFilesResponse getInputFiles(InputFilesQueryParams params) {
+    try (Stream<Path> paths = Files.list(pathProperties.inputDirectory())) {
+      List<String> files =
+          paths
+              .filter(Files::isRegularFile)
+              .map(Path::getFileName)
+              .map(Path::toString)
+              .filter(fileName ->
+                  params.fileType() != null
+                      ? fileNameResolver
+                          .getExtension(fileName)
+                          .equalsIgnoreCase(params.fileType().getExtension())
+                      : true)
+              .toList();
+
+      return new InputFilesResponse(files);
+
+    } catch (IOException exception) {
+      throw new FileProcessingException("Failed to read input file directory", exception);
+    }
+  }
+
+  private void rollback(Path processedDestination, Path encodedDestination) {
+    pathDeleter.delete(encodedDestination);
+    pathDeleter.delete(processedDestination);
+  }
+
+  private void moveToError(Path inputFile) {
+
+    if (!Files.exists(inputFile)) {
+      return;
     }
 
-    public InputFilesResponse getInputFiles(InputFilesQueryParams params) {
-        try (Stream<Path> paths = Files.list(pathProperties.inputDirectory())) {
-            List<String> files = paths
-                    .filter(Files::isRegularFile)
-                    .map(Path::getFileName)
-                    .map(Path::toString)
-                    .filter(fileName -> params.fileType() != null
-                            ? fileNameResolver.getExtension(fileName).equalsIgnoreCase(params.fileType().getExtension())
-                            : true)
-                    .toList();
+    Path requestedDestination = pathProperties.errorDirectory().resolve(inputFile.getFileName());
 
-            return new InputFilesResponse(files);
+    Path errorDestination = fileNameResolver.resolve(requestedDestination);
 
-        } catch (IOException exception) {
-            throw new FileProcessingException("Failed to read input file directory", exception);
-        }
+    try {
+      fileRelocator.move(inputFile, errorDestination);
+
+      log.info("Moved failed input file to Error: {}", errorDestination.getFileName());
+
+    } catch (RuntimeException exception) {
+      log.error("Failed to move input file to Error: {}", inputFile.getFileName(), exception);
+    }
+  }
+
+  private void validateRequest(ProcessingRequest request) {
+
+    if (request.getFileTypes() == null) {
+      return;
     }
 
-    private void rollback(Path processedDestination, Path encodedDestination) {
-        pathDeleter.delete(encodedDestination);
-        pathDeleter.delete(processedDestination);
+    Set<String> invalidFileTypes =
+        request.getFileTypes().stream()
+            .filter(fileType -> !allowedFileTypesProperties.allowedFileTypes().contains(fileType))
+            .map(FileType::getExtension)
+            .collect(Collectors.toSet());
+
+    if (!invalidFileTypes.isEmpty()) {
+      throw new ValidationException(
+          "Invalid file types in request",
+          Map.of("invalidFileTypes", invalidFileTypes.stream().toList()));
     }
+  }
 
-    private void moveToError(Path inputFile) {
+  private String getBaseName(String fileName) {
+    int extensionIndex = fileName.lastIndexOf('.');
 
-        if (!Files.exists(inputFile)) {
-            return;
-        }
-
-        Path requestedDestination = pathProperties.errorDirectory().resolve(inputFile.getFileName());
-
-        Path errorDestination = fileNameResolver.resolve(requestedDestination);
-
-        try {
-            fileRelocator.move(
-                    inputFile,
-                    errorDestination
-            );
-
-            log.info("Moved failed input file to Error: {}", errorDestination.getFileName());
-
-        } catch (RuntimeException exception) {
-            log.error("Failed to move input file to Error: {}", inputFile.getFileName(), exception);
-        }
-    }
-
-    private void validateRequest(ProcessingRequest request) {
-
-        if (request.getFileTypes() == null) {
-            return;
-        }
-
-        Set<String> invalidFileTypes = request.getFileTypes().stream()
-                .filter(fileType -> !allowedFileTypesProperties.allowedFileTypes().contains(fileType))
-                .map(FileType::getExtension)
-                .collect(Collectors.toSet());
-
-        if (!invalidFileTypes.isEmpty()) {
-            throw new ValidationException(
-                    "Invalid file types in request",
-                    Map.of("invalidFileTypes", invalidFileTypes.stream().toList())
-            );
-        }
-    }
-
-    private String getBaseName(String fileName) {
-        int extensionIndex = fileName.lastIndexOf('.');
-
-        return extensionIndex > 0
-                ? fileName.substring(0, extensionIndex)
-                : fileName;
-    }
+    return extensionIndex > 0 ? fileName.substring(0, extensionIndex) : fileName;
+  }
 }

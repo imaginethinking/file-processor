@@ -16,18 +16,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("internal/v1/files")
 public class ProcessingController {
 
-    private final ProcessingService processingService;
+  private final ProcessingService processingService;
 
-    @PostMapping
-    public ResponseEntity<ProcessingResultResponse> process(@Valid @RequestBody ProcessingRequest request) {
-        ProcessingResultResponse response = this.processingService.process(request);
-        return ResponseEntity.ok(response);
-    }
+  @PostMapping
+  public ResponseEntity<ProcessingResultResponse> process(
+      @Valid @RequestBody ProcessingRequest request) {
+    ProcessingResultResponse response = this.processingService.process(request);
+    return ResponseEntity.ok(response);
+  }
 
-    @GetMapping
-    public ResponseEntity<InputFilesResponse> getInputFiles(@Valid @ModelAttribute InputFilesQueryParams params) {
-        InputFilesResponse response = processingService.getInputFiles(params);
+  @GetMapping
+  public ResponseEntity<InputFilesResponse> getInputFiles(
+      @Valid @ModelAttribute InputFilesQueryParams params) {
+    InputFilesResponse response = processingService.getInputFiles(params);
 
-        return ResponseEntity.ok(response);
-    }
+    return ResponseEntity.ok(response);
+  }
 }

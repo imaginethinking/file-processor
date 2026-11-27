@@ -13,11 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/dev")
 public class DevTokenController {
 
-    private final JwtIssuer jwtIssuer;
+  private final JwtIssuer jwtIssuer;
 
-    @GetMapping("/token")
-    public String token() {
-        return jwtIssuer.issue();
-    }
-
+  @GetMapping("/token")
+  public String token() {
+    return jwtIssuer.issue();
+  }
 }

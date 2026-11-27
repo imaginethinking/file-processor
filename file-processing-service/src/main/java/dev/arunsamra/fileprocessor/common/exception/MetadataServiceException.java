@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public class MetadataServiceException extends RestException {
 
-    public MetadataServiceException(String message, Throwable cause) {
-        super(HttpStatus.BAD_GATEWAY, message, cause);
-    }
+  public MetadataServiceException(String message, Throwable cause) {
+    super(HttpStatus.BAD_GATEWAY, message, cause);
+  }
 }
